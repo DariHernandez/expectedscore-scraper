@@ -36,7 +36,7 @@ def main ():
     while True:
 
         current_page += 1
-        logging.info (f"\nCurrent page: {current_page}")
+        logger.info (f"\nCurrent page: {current_page}")
 
         # Get matches links
         links_matches = []
@@ -52,13 +52,56 @@ def main ():
         logger.info ("Extracting data: ")
         scraper.open_tab ()
         scraper.switch_to_tab (1)
-        for link in tqdm(links_matches): 
+        
+        # Matches loop
+        # for link in tqdm(links_matches): 
+        for link in links_matches: 
 
             # Open match in second tab
             scraper.set_page (link)
-            time.sleep (5)
+            time.sleep (3)
 
-            # TODO:Get match data
+            # Go to Standing page
+            selector_standing = ".about-match-page__nav > .menu-btn.spreadsheet"
+            scraper.click (selector_standing)
+            time.sleep (3)
+            scraper.refresh_selenium (back_tab=1)
+
+            selector_base = '.tournament-table__body > div[mode="out-in"] > .row'
+            selectors_teams = [
+                f"{selector_base}.first-team", 
+                f"{selector_base}.second-team"
+            ]
+
+            skip_columns = list(range (4, 14))
+
+            # Teams loop
+            match_data = []
+            for selector_team in selectors_teams:
+
+                # Columns loop
+                selector_columns = f"{selector_team} > div.cell"
+                columns_elem = scraper.get_elems (selector_columns)
+                team_data = []
+                for column_index in range (1, len(columns_elem) + 1):
+
+                    # Columns validation
+                    if column_index not in skip_columns:
+                        
+                        # Get columns data
+                        selector_column = f"{selector_columns}:nth-child({column_index})"
+                        column_value = scraper.get_text (selector_column)
+
+                        # Convert to number
+                        try:
+                            column_value = float(column_value)
+                        except:
+                            pass
+
+                        team_data.append (column_value)
+
+                match_data.append (team_data)
+
 
         # Close tab
         scraper.end_browser ()
