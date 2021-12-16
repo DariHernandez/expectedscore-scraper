@@ -55,7 +55,7 @@ def main ():
         
         # Matches loop
         # for link in tqdm(links_matches): 
-        data_page = []
+        page_data = []
         for link in links_matches: 
 
             # Open match in second tab
@@ -74,8 +74,6 @@ def main ():
                 f"{selector_base}.second-team"
             ]
 
-            skip_columns = list(range (4, 14))
-
             # Teams loop
             match_data = []
             for selector_team in selectors_teams:
@@ -86,26 +84,81 @@ def main ():
                 team_data = []
                 for column_index in range (1, len(columns_elem) + 1):
 
-                    # Columns validation
-                    if column_index not in skip_columns:
-                        
-                        # Get columns data
-                        selector_column = f"{selector_columns}:nth-child({column_index})"
-                        column_value = scraper.get_text (selector_column)
+                    # Get columns data
+                    selector_column = f"{selector_columns}:nth-child({column_index})"
+                    column_value = scraper.get_text (selector_column)
 
-                        # Convert to number
-                        try:
-                            column_value = float(column_value)
-                        except:
-                            pass
+                    # Convert to number
+                    try:
+                        column_value = float(column_value)
+                    except:
+                        pass
 
-                        team_data.append (column_value)
+                    team_data.append (column_value)
 
                 match_data.append (team_data)
 
-            data_page.append (match_data)
+            page_data.append (match_data)
 
-        # Save data in output file
+        # data matches loop
+        formated_data = []
+        for match_data in page_data:
+
+            # Format data to write in spreadsheet
+            formated_row = []
+            match_name = f"{match_data[0][1]} - {match_data[1][1]}"
+            formated_row.append (match_name)
+            for team_data in match_data:
+
+                # Get data
+                team = team_data[1]
+                p = team_data[2]
+                ptos = team_data[9]
+                gd_xgd = team_data[13]
+                xg_sh = team_data[14]
+                xga_sh = team_data[15]
+                xg90 = team_data[16]
+                xga90 = team_data[17]
+                xg90_xga90 = team_data[18]
+                xg90__xga90 = team_data[19]
+                xg90_03_max	= team_data[20]
+                xga90_03_max = team_data[21]
+                xg90_xga90_03_max = team_data[22]
+                xg90__xga90_03_max = team_data[23]
+                xg90_index = team_data[24]
+                xga90_index = team_data[25]
+                xg90_noindex = team_data[26]
+                xga90_noindex = team_data[27]
+                xg90_xga90_noindex = team_data[28]
+                xg90__xga90_noindex = team_data[29]
+
+                # Save data in correct order
+                formated_row.append (team)
+                formated_row.append (p)
+                formated_row.append (ptos)
+                formated_row.append (gd_xgd)
+                formated_row.append (xg_sh)
+                formated_row.append (xga_sh)
+                formated_row.append (xg90)
+                formated_row.append (xga90)
+                formated_row.append (xg90_xga90)
+                formated_row.append (xg90__xga90)
+                formated_row.append (xg90_03_max)
+                formated_row.append (xga90_03_max)
+                formated_row.append (xg90_xga90_03_max)
+                formated_row.append (xg90__xga90_03_max)
+                formated_row.append (xg90_index)
+                formated_row.append (xga90_index)
+                formated_row.append (xg90_noindex)
+                formated_row.append (xga90_noindex)
+                formated_row.append (xg90_xga90_noindex)
+                formated_row.append (xg90__xga90_noindex)
+
+            formated_data.append (formated_row)
+
+
+
+
 
 
         # Close tab
