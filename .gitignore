@@ -8,3 +8,5 @@ temp.*
 *.zip
 *.png
 venv
+*.xlsx
+*.xlsx#

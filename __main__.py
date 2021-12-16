@@ -3,6 +3,7 @@ import time
 from config import Config
 from logs import logger
 from tqdm import tqdm
+from spreadsheet_manager.xlsx import SS_manager
 from scraping_manager.automate import Web_scraping
 
 def main (): 
@@ -155,6 +156,14 @@ def main ():
                 formated_row.append (xg90__xga90_noindex)
 
             formated_data.append (formated_row)
+
+        # Save data in spreasheet
+        file_path = os.path.join (os.path.dirname (__file__), "output.xlsx")
+        ss = SS_manager(file_path)
+        ss.set_sheet ("data")
+        ss.write_data (formated_data, start_row=2)
+        ss.save()
+        print ("Done")
 
 
 
