@@ -13,10 +13,12 @@ def main ():
     password = credentials.get('password')
 
     # Start chrome instance
+    logger.info ("Starting chrome...")
     web_page = "https://expectedscore.com/"
     scraper = Web_scraping (web_page)
 
     # Login 
+    logger.info ("Login with credentials...")
     selector_login_button = "button.login_btn"
     scraper.click (selector_login_button)
     scraper.refresh_selenium ()
@@ -30,7 +32,11 @@ def main ():
     scraper.refresh_selenium ()
 
     # Pagination loop
+    current_page = 0
     while True:
+
+        current_page += 1
+        logging.info (f"\nCurrent page: {current_page}")
 
         # Get matches links
         links_matches = []
