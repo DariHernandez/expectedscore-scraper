@@ -55,6 +55,7 @@ def main ():
         
         # Matches loop
         # for link in tqdm(links_matches): 
+        data_page = []
         for link in links_matches: 
 
             # Open match in second tab
@@ -101,6 +102,10 @@ def main ():
                         team_data.append (column_value)
 
                 match_data.append (team_data)
+
+            data_page.append (match_data)
+
+        # Save data in output file
 
 
         # Close tab
