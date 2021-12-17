@@ -1,61 +1,70 @@
-# [PROJECT NAME]
+# Expectedscore Scraper
 **python version: 3.9**
 
-[DESCRIPTION]
+Extraer información de [expectedscore.com](https://expectedscore.com/) y guardarla en una hoja de cálculo de Excel.
+El programa requiere inicio de sesión para poder visualizar los datos.
+
+## Flujo del programa 
+
+1. Iniciar sesión sesión en la página.
+2. Obtener los partidos mediante paginación (12 a la vez).
+3. Extraer la informaicón de los partidos (estadisticas de equipo local y visitante).
+4. Formatear la información.
+5. Guardar la informaicón resultante en una hoja de cálculo de excel. 
+6. Solicitar al usuario si desea continuar con los siguientes 12 partidos o detener el programa.
+
+## Prompt
+
+Para el **paso 6** del **flujo del programa**, en la terminal se muestra un mensaje como: 
+
+```bash
+continue? _
+```
+
+Cualquier texto de entrada (como "sí", "yes", "s", o solamente la tecla *enter*), se considera como *sí* a excepción de la palabra "no" (en caso de ingresar esa palabra, el programa se detendrá).
 
 
-# Install
-## Third party modules
+# Instalación
+## Instalar módulos de terceros
 
-Install all modules from pip: 
+Instale los módulos necesarios mediante pip: 
 
 ``` bash
 $ pip install -r requirements.txt
 ```
 
-## Programs
+## Programas
 
-To run the project, the following programs must be installed:: 
+Para ejecutar el proyecto, los siguientes programas deben estar instalados
 
-* [Google Chrome](https://www.google.com/intl/es/chrome) last version
+* [Google Chrome](https://www.google.com/intl/es/chrome) última versión
 
-# Run the program
+# Ejecutar el programa
 
-## GUI
+Para iniciar el programa, ejecuta el archivo __ main__.py o la carpeta del proyecto con tu interprete de python 3.9 
 
-For **start** the program with **graphic interface**, **run** the file **__ main__.py** with you **python 3.9** interpreter.
+#  Configuraciones
 
-The graphical interface, in addition to allowing you to run the program, will make it easier for you to configure it (more details in the configuration section).
+Todas las configuraciones se encuentran en el archivo config.json
 
-![Home]([img url])
+```json
+{
+    "user": "email@gmail.com",
+    "password": "mypass"
+}
+```
 
-## Terminal
+## user
 
-To **start** the program **in terminal** / without interfaz, **run** the **crimegrade_scraper.py** file with your **python 3.9** interpreter.
+Usuario para la página [expectedscore.com](https://expectedscore.com/)
 
-Executing the program in this way **it will not be possible to update the configurations** and it will be executed with the **last configuration** (more details in the next).
+## password
 
-Ejecutando el programa de esta forma **no se podrán actualizar las configuraciones** y se ejecutará con la **última configuración establecida** (mas detalles en la sección de configuración). 
+Contraseña de usuario para la página [expectedscore.com](https://expectedscore.com/)
 
-# Configuration / setting
+# Datos de salida
 
-## Home
+La información del web scraping se deposita en el archivo **output.xlsx**, en la hoja **data**.
+Cada vez que se ejecuta el programa, la informaicón del documento se sobreescribe, por lo que, es remondable hacer un respaldo antes de iniciar y ejecutar el programa con la hoja **data** sin filas (unicamente con las nombres de las columnas, pero sin registros)
 
-![Config screen 1]([img url])
-
-On the home screen, you must **write the name of the table** where the **scraping data** will be **saved**.
-If the **table does not exist** in the database, **the program will create it**.
-
-### DATABASE
-
-![Config screen 2]([img url])
-
-To configure the database, we need to set our credentials:
-* **Server**
-* **Database name**
-* **User**
-* **Password**
-
-## config.json
-
-All **configurations** are saved in the **config.json file**, so **you can edit it manually** without the graphical interface.
+**Nota:** durante la ejecución del programa (el proceso de web scraping), es importante **NO tener abierto** el archvo de excel, ya que puede provocar un conflicto de escritura.

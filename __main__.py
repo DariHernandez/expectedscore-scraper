@@ -15,7 +15,7 @@ def login (current_tab=0):
     password = credentials.get('password')
 
     # Start chrome instance
-    logger.info ("Starting chrome...")
+    logger.info ("\nStarting chrome...")
     web_page = "https://expectedscore.com/"
     scraper.set_page (web_page)
 
