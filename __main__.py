@@ -6,8 +6,9 @@ from tqdm import tqdm
 from spreadsheet_manager.xlsx import SS_manager
 from scraping_manager.automate import Web_scraping
 
-def main (): 
+scraper = Web_scraping ("about:blank")
 
+def login (current_tab=0):
     # Get credentials
     credentials = Config()
     user = credentials.get('user')
@@ -16,13 +17,13 @@ def main ():
     # Start chrome instance
     logger.info ("Starting chrome...")
     web_page = "https://expectedscore.com/"
-    scraper = Web_scraping (web_page)
+    scraper.set_page (web_page)
 
     # Login 
     logger.info ("Login with credentials...")
     selector_login_button = "button.login_btn"
     scraper.click (selector_login_button)
-    scraper.refresh_selenium ()
+    scraper.refresh_selenium(back_tab=current_tab)
 
     selector_user = 'input[name="USER_LOGIN"]'
     selector_password = 'input[name="USER_PASSWORD"]'
@@ -30,10 +31,15 @@ def main ():
     scraper.send_data (selector_user, user)
     scraper.send_data (selector_password, password)
     scraper.click (selector_submit)
-    scraper.refresh_selenium ()
+    scraper.refresh_selenium(back_tab=current_tab)
+
+def main (): 
+
+    login ()
 
     # Pagination loop
     current_page = 0
+    current_row = 2
     while True:
 
         current_page += 1
@@ -41,7 +47,7 @@ def main ():
 
         # Get matches links
         links_matches = []
-        selector_matches = '.next-matches-section.allchamp.active > .next-matches-section-page[data-nm-page="1"] > a.next-matches-item'
+        selector_matches = '.next-matches-section.allchamp.active > .next-matches-section-page.active > a.next-matches-item'
         elems_matches = scraper.get_elems (selector_matches)
         for match_index in range (1, len (elems_matches) + 1):
 
@@ -55,13 +61,25 @@ def main ():
         scraper.switch_to_tab (1)
         
         # Matches loop
-        # for link in tqdm(links_matches): 
         page_data = []
-        for link in links_matches: 
+        for link in tqdm(links_matches): 
 
             # Open match in second tab
             scraper.set_page (link)
             time.sleep (3)
+
+            # Catch login time out error
+            selector_error = ".access-denied-xg-block > .access-denied-xg-title"
+            error_text = str(scraper.get_text (selector_error))
+            if "not have sufficient rights" in error_text:
+                scraper.open_tab ()
+                scraper.switch_to_tab (2)
+                login (current_tab=2)
+                scraper.end_browser()
+                scraper.switch_to_tab (1)
+                scraper.driver.refresh ()
+                time.sleep (3)
+                scraper.refresh_selenium (back_tab=1)
 
             # Go to Standing page
             selector_standing = ".about-match-page__nav > .menu-btn.spreadsheet"
@@ -79,9 +97,18 @@ def main ():
             match_data = []
             for selector_team in selectors_teams:
 
-                # Columns loop
                 selector_columns = f"{selector_team} > div.cell"
-                columns_elem = scraper.get_elems (selector_columns)
+
+                # Get columns
+                while True:
+                    columns_elem = scraper.get_elems (selector_columns)
+                    if not columns_elem:
+                        time.sleep (2)
+                        scraper.refresh_selenium(back_tab=1)
+                    else:
+                        break
+
+                # Columns loop
                 team_data = []
                 for column_index in range (1, len(columns_elem) + 1):
 
@@ -101,7 +128,9 @@ def main ():
 
             page_data.append (match_data)
 
-        # data matches loop
+        # Loop for formatd data
+        logger.info("Formating data...")
+        saved_matches = []
         formated_data = []
         for match_data in page_data:
 
@@ -109,6 +138,7 @@ def main ():
             formated_row = []
             match_name = f"{match_data[0][1]} - {match_data[1][1]}"
             formated_row.append (match_name)
+            saved_matches.append (match_name)
             for team_data in match_data:
 
                 # Get data
@@ -157,28 +187,41 @@ def main ():
 
             formated_data.append (formated_row)
 
-        # Save data in spreasheet
-        file_path = os.path.join (os.path.dirname (__file__), "output.xlsx")
-        ss = SS_manager(file_path)
-        ss.set_sheet ("data")
-        ss.write_data (formated_data, start_row=2)
-        ss.save()
-        print ("Done")
-
-
-
-
-
-
         # Close tab
         scraper.end_browser ()
         scraper.switch_to_tab (0) 
 
-        input ("Continue?")
-        selector_next = ".next-matches-btn.next"
-        classes_next = scraper.get_attrib (selector_next, "class")
-        if "disable" in classes_next:
-            logger.info ("No more matches. Program end.")
+        # Save data in spreasheet
+        logger.info("Saving data...")
+        file_path = os.path.join (os.path.dirname (__file__), "output.xlsx")
+        ss = SS_manager(file_path)
+        ss.set_sheet ("data")
+        ss.write_data (formated_data, start_row=current_row)
+        ss.save()
+        current_row += len(formated_data)
+        
+        # Pages debugs 
+        logger.info ("\nData saved.")
+        logger.info ("Matches: ")
+        for match in saved_matches:
+            logger.info (f"\t{match}")
+
+        # requests continue prompt
+        prompt = input ("\nContinue? ")
+        if str(prompt).lower().strip() == "no":
+            scraper.end_browser()
+            break
+        else:
+            selector_next = ".next-matches-btn.next"
+            classes_next = scraper.get_attrib (selector_next, "class")
+            if "disable" in classes_next:
+                logger.info ("No more matches. Program end.")
+                scraper.end_browser()
+                break
+            else:
+                scraper.click (selector_next)
+                time.sleep (3)
+                scraper.refresh_selenium ()
 
 
 
