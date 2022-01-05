@@ -68,6 +68,11 @@ def main ():
             scraper.set_page (link)
             time.sleep (3)
 
+            # Validate url
+            url = scraper.driver.current_url
+            if url == "https://expectedscore.com/404.php":
+                continue
+
             # Catch login time out error
             selector_error = ".access-denied-xg-block > .access-denied-xg-title"
             error_text = str(scraper.get_text (selector_error))
@@ -126,6 +131,7 @@ def main ():
 
                 match_data.append (team_data)
 
+            match_data.append (url)
             page_data.append (match_data)
 
         # Loop for formatd data
@@ -139,7 +145,7 @@ def main ():
             match_name = f"{match_data[0][1]} - {match_data[1][1]}"
             formated_row.append (match_name)
             saved_matches.append (match_name)
-            for team_data in match_data:
+            for team_data in match_data[:2]:
 
                 # Get data
                 team = team_data[1]
@@ -185,6 +191,7 @@ def main ():
                 formated_row.append (xg90_xga90_noindex)
                 formated_row.append (xg90__xga90_noindex)
 
+            formated_row.append (match_data[-1])
             formated_data.append (formated_row)
 
         # Close tab
