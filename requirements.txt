@@ -1,4 +1,4 @@
-openpyxl==3.0.7
 selenium==3.141.0
 tqdm==4.61.1
 webdriver-manager==3.4.1
+requests==2.25.1
