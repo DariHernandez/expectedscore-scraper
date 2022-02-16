@@ -136,10 +136,15 @@ def main ():
 
                 match_data.append (team_data)
 
+            # Get max number or teams
+            teams_num_selector = '.tournament-table__body > [mode="out-in"] > div:last-child > div:first-child'
+            teams_num = scraper.get_text (teams_num_selector)
+
+            match_data.append (teams_num)
             match_data.append (url)
             page_data.append (match_data)
 
-        # Loop for formatd data
+        # Loop for format data
         logger.info("Formating data and sendint to API...")
         saved_matches = []
         for match_data in page_data:
@@ -152,6 +157,7 @@ def main ():
             for team_data in match_data[:2]:
 
                 # Get data
+                position = team_data[0]
                 team = team_data[1]
                 p = team_data[2]
                 ptos = team_data[9]
@@ -174,6 +180,7 @@ def main ():
                 xg90__xga90_noindex = team_data[29]
 
                 # Save data in correct order
+                formated_row.append (position)
                 formated_row.append (team)
                 formated_row.append (p)
                 formated_row.append (ptos)
@@ -195,56 +202,64 @@ def main ():
                 formated_row.append (xg90_xga90_noindex)
                 formated_row.append (xg90__xga90_noindex)
 
-            formated_row.append (match_data[-1])
+            formated_row.append (match_data[-2])
+            formated_row.append (match_data[-1])            
 
             # Format params
             params = {
                 "match": formated_row[0],
                 "match_date": datetime.datetime.now(),
-                "team__home": formated_row[1],
-                "played_home": formated_row[2],
-                "pts_home": formated_row[3],
-                "gd_xgd_home": formated_row[4],
-                "xg_sh_home": formated_row[5],
-                "xga_sh_home": formated_row[6],
-                "xg90_home": formated_row[7],
-                "xga90_home": formated_row[8],
-                "xg90_xga90_plus_home": formated_row[9],
-                "xg90_xga90_div_home": formated_row[10],
-                "xg90_0_3_max_home": formated_row[11],
-                "xga90_0_3_max_home": formated_row[12],
-                "xg90_xga90_plus_03_max_home": formated_row[13],
-                "xg90_xga90_div_0_3_max_home": formated_row[14],
-                "xg90_index_home": formated_row[15],
-                "xga90_index_home": formated_row[16],
-                "xg90_no_index_home": formated_row[17],
-                "xga90_no_index_home": formated_row[18],
-                "xg90_xga90_plus_no_index_home": formated_row[19],
-                "xg90_xga90_div_no_index_home": formated_row[20],
-                "team_away": formated_row[21],
-                "played_away": formated_row[22],
-                "pts_away": formated_row[23],
-                "gd_xgd_away": formated_row[24],
-                "xg_sh_away": formated_row[25],
-                "xga_sh_away": formated_row[26],
-                "xg90_away": formated_row[27],
-                "xga90_away": formated_row[28],
-                "xg90_plus_xga90_away": formated_row[29],
-                "xg90_div_xga90_away": formated_row[30],
-                "xg90_0_3_max_away": formated_row[31],
-                "xga90_0_3_max_away": formated_row[32],
-                "xg90_xga90_plus_0_3_max_away": formated_row[33],
-                "xg90_xga90_div__0_3_max_away": formated_row[34],
-                "xg90_index_away": formated_row[35],
-                "xga90_index_away": formated_row[36],
-                "xg90_no_index_away": formated_row[37],
-                "xga90_no_index_away": formated_row[38],
-                "xg90_xga90_plus_no_index_away": formated_row[39],
-                "xg90_xga90_div_no_index_away": formated_row[40],
-                "url": formated_row[41]
+                "position_home": int(formated_row[1]),
+                "team__home": formated_row[2],
+                "played_home": formated_row[3],
+                "pts_home": formated_row[4],
+                "gd_xgd_home": formated_row[5],
+                "xg_sh_home": formated_row[6],
+                "xga_sh_home": formated_row[7],
+                "xg90_home": formated_row[8],
+                "xga90_home": formated_row[9],
+                "xg90_xga90_plus_home": formated_row[10],
+                "xg90_xga90_div_home": formated_row[11],
+                "xg90_0_3_max_home": formated_row[12],
+                "xga90_0_3_max_home": formated_row[13],
+                "xg90_xga90_plus_03_max_home": formated_row[14],
+                "xg90_xga90_div_0_3_max_home": formated_row[15],
+                "xg90_index_home": formated_row[16],
+                "xga90_index_home": formated_row[17],
+                "xg90_no_index_home": formated_row[18],
+                "xga90_no_index_home": formated_row[19],
+                "xg90_xga90_plus_no_index_home": formated_row[20],
+                "xg90_xga90_div_no_index_home": formated_row[21],
+                "position_away": int(formated_row[22]),
+                "team_away": formated_row[23],
+                "played_away": formated_row[24],
+                "pts_away": formated_row[25],
+                "gd_xgd_away": formated_row[26],
+                "xg_sh_away": formated_row[27],
+                "xga_sh_away": formated_row[28],
+                "xg90_away": formated_row[29],
+                "xga90_away": formated_row[30],
+                "xg90_plus_xga90_away": formated_row[31],
+                "xg90_div_xga90_away": formated_row[32],
+                "xg90_0_3_max_away": formated_row[33],
+                "xga90_0_3_max_away": formated_row[34],
+                "xg90_xga90_plus_0_3_max_away": formated_row[35],
+                "xg90_xga90_div__0_3_max_away": formated_row[36],
+                "xg90_index_away": formated_row[37],
+                "xga90_index_away": formated_row[38],
+                "xg90_no_index_away": formated_row[39],
+                "xga90_no_index_away": formated_row[40],
+                "xg90_xga90_plus_no_index_away": formated_row[41],
+                "xg90_xga90_div_no_index_away": formated_row[42],
+                "teams_num": formated_row[43],
+                "url": formated_row[44]
             }
 
-            # Send aata to API
+            # Debug lines
+            import pprint
+            pprint.pprint (params)
+
+            # Send data to API
             try_request (api_url, params, send_data)
 
         # Close tab
