@@ -10,7 +10,7 @@ with open(data_send_path) as file:
     data_send_json = file.read()
     data_send = json.loads(data_send_json)
 
-def try_request(api_url:str, params:dict, send_data:bool=False):
+def try_request(api_url:str, params:dict, send_data:bool=False, validate_last_data:bool=False):
     """Send data to API in Post
 
     Args:
@@ -20,9 +20,10 @@ def try_request(api_url:str, params:dict, send_data:bool=False):
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 
     # Validate params
-    if params in data_send:
-        logger.info(f"\tSkipped, data already sent to the API.")
-        return None
+    if validate_last_data:
+        if params in data_send:
+            logger.info(f"\tSkipped, data already sent to the API.")
+            return None
 
     # Try to send data to api
     try_api_counter = 0
@@ -55,8 +56,9 @@ def try_request(api_url:str, params:dict, send_data:bool=False):
             data_send.append(params)
 
             # Write json param file
-            with open(data_send_path, "w") as file:
-                data_send_json = json.dumps(data_send)
-                file.write(data_send_json)
+            if validate_last_data:
+                with open(data_send_path, "w") as file:
+                    data_send_json = json.dumps(data_send)
+                    file.write(data_send_json)
 
             break

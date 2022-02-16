@@ -1,18 +1,23 @@
 import os
 import time
-from config import Config
-from logs import logger
+import datetime
 from tqdm import tqdm
+from logs import logger
+from config import Config
+from api_post import try_request
 from spreadsheet_manager.xlsx import SS_manager
 from scraping_manager.automate import Web_scraping
 
 scraper = Web_scraping ("about:blank")
 
+# Get credentials
+credentials = Config()
+user = credentials.get('user')
+password = credentials.get('password')
+send_data = credentials.get('send_data')
+api_url = credentials.get('api_url')
+
 def login (current_tab=0):
-    # Get credentials
-    credentials = Config()
-    user = credentials.get('user')
-    password = credentials.get('password')
 
     # Start chrome instance
     logger.info ("\nStarting chrome...")
@@ -135,9 +140,8 @@ def main ():
             page_data.append (match_data)
 
         # Loop for formatd data
-        logger.info("Formating data...")
+        logger.info("Formating data and sendint to API...")
         saved_matches = []
-        formated_data = []
         for match_data in page_data:
 
             # Format data to write in spreadsheet
@@ -192,20 +196,60 @@ def main ():
                 formated_row.append (xg90__xga90_noindex)
 
             formated_row.append (match_data[-1])
-            formated_data.append (formated_row)
+
+            # Format params
+            params = {
+                "match": formated_row[0],
+                "match_date": datetime.datetime.now(),
+                "team__home": formated_row[1],
+                "played_home": formated_row[2],
+                "pts_home": formated_row[3],
+                "gd_xgd_home": formated_row[4],
+                "xg_sh_home": formated_row[5],
+                "xga_sh_home": formated_row[6],
+                "xg90_home": formated_row[7],
+                "xga90_home": formated_row[8],
+                "xg90_xga90_plus_home": formated_row[9],
+                "xg90_xga90_div_home": formated_row[10],
+                "xg90_0_3_max_home": formated_row[11],
+                "xga90_0_3_max_home": formated_row[12],
+                "xg90_xga90_plus_03_max_home": formated_row[13],
+                "xg90_xga90_div_0_3_max_home": formated_row[14],
+                "xg90_index_home": formated_row[15],
+                "xga90_index_home": formated_row[16],
+                "xg90_no_index_home": formated_row[17],
+                "xga90_no_index_home": formated_row[18],
+                "xg90_xga90_plus_no_index_home": formated_row[19],
+                "xg90_xga90_div_no_index_home": formated_row[20],
+                "team_away": formated_row[21],
+                "played_away": formated_row[22],
+                "pts_away": formated_row[23],
+                "gd_xgd_away": formated_row[24],
+                "xg_sh_away": formated_row[25],
+                "xga_sh_away": formated_row[26],
+                "xg90_away": formated_row[27],
+                "xga90_away": formated_row[28],
+                "xg90_plus_xga90_away": formated_row[29],
+                "xg90_div_xga90_away": formated_row[30],
+                "xg90_0_3_max_away": formated_row[31],
+                "xga90_0_3_max_away": formated_row[32],
+                "xg90_xga90_plus_0_3_max_away": formated_row[33],
+                "xg90_xga90_div__0_3_max_away": formated_row[34],
+                "xg90_index_away": formated_row[35],
+                "xga90_index_away": formated_row[36],
+                "xg90_no_index_away": formated_row[37],
+                "xga90_no_index_away": formated_row[38],
+                "xg90_xga90_plus_no_index_away": formated_row[39],
+                "xg90_xga90_div_no_index_away": formated_row[40],
+                "url": formated_row[41]
+            }
+
+            # Send aata to API
+            try_request (api_url, params, send_data)
 
         # Close tab
         scraper.end_browser ()
         scraper.switch_to_tab (0) 
-
-        # Save data in spreasheet
-        logger.info("Saving data...")
-        file_path = os.path.join (os.path.dirname (__file__), "output.xlsx")
-        ss = SS_manager(file_path)
-        ss.set_sheet ("data")
-        ss.write_data (formated_data, start_row=current_row)
-        ss.save()
-        current_row += len(formated_data)
         
         # Pages debugs 
         logger.info ("\nData saved.")
