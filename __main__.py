@@ -5,7 +5,6 @@ from tqdm import tqdm
 from logs import logger
 from config import Config
 from api_post import try_request
-from spreadsheet_manager.xlsx import SS_manager
 from scraping_manager.automate import Web_scraping
 
 scraper = Web_scraping ("about:blank")
@@ -39,8 +38,9 @@ def login (current_tab=0):
     scraper.refresh_selenium(back_tab=current_tab)
 
 def get_scores (scraper):
-    """ Get the sum of the scores (last one, last five and last ten) 
-        of the current team (away or home) in the previw page
+    """ Get the sum of the scores (last one, last five and last ten),
+        and the sum of the Gx scores, of the current team (away or home) 
+        in the previw page
 
     Args:
         scraper (Web_scraping): Web_scraping class instance
@@ -56,11 +56,23 @@ def get_scores (scraper):
         scraper.click (selector_show_more)
         time.sleep (0.5)
 
-    # Get last match points
+    # Score color variables
     score_one = None
     score_five = None
     score_ten = None
     score_sum = 0
+
+    # Score xg variables
+    score_xg_one_a = None
+    score_xg_five_a = None
+    score_xg_ten_a = None
+    score_xg_sum_a = 0
+    score_xg_one_b = None
+    score_xg_five_b = None
+    score_xg_ten_b = None
+    score_xg_sum_b = 0
+
+    # Get points and xg score from each row
     score_counter = 0
     selector_rows = ".pre-match-statistics__history-L5M .comparison-table > .body > .row"
     rows = scraper.get_elems (selector_rows)
@@ -71,6 +83,9 @@ def get_scores (scraper):
         style_current_row = scraper.get_attrib (selector_current_row, "style")
         if style_current_row:
             continue
+
+        # Incress row counter
+        score_counter += 1
 
         # Get score color
         selector_score = f'{selector_current_row} > [data-col-type="score"]'
@@ -85,22 +100,42 @@ def get_scores (scraper):
         if "red" in score_color:
             score_poits = 0
         
-        # Sum socre with the last values and incress counter
+        # Sum socre with the last values
         score_sum += score_poits
-        score_counter += 1
+
+
+        # Get xg score
+        selector_score_a = f'{selector_current_row} > [data-col-type="xg_score"] span:nth-child(1)'
+        selector_score_b = f'{selector_current_row} > [data-col-type="xg_score"] span:nth-child(3)'
+        score_a = float(scraper.get_text (selector_score_a))
+        score_b = float(scraper.get_text (selector_score_b))
+
+        # Sum xg scores with the last values
+        score_xg_sum_a += score_a
+        score_xg_sum_b += score_b
 
         # Save score sums
         if score_counter == 1:
             score_one = score_sum
+            score_xg_one_a = round(score_xg_sum_a, 2)
+            score_xg_one_b = round(score_xg_sum_b, 2)
         if score_counter == 5:
             score_five = score_sum
+            score_xg_five_a = round(score_xg_sum_a, 2)
+            score_xg_five_b = round(score_xg_sum_b, 2)
         if score_counter == 10:
             score_ten = score_sum
+            score_xg_ten_a = round(score_xg_sum_a, 2)
+            score_xg_ten_b = round(score_xg_sum_b, 2)
     
     if not score_ten:
         score_ten = score_sum
+        score_xg_ten_a = score_xg_sum_a
+        score_xg_ten_b = score_xg_sum_b
 
-    return (score_one, score_five, score_ten)
+    return (score_one, score_five, score_ten, 
+            score_xg_one_a, score_xg_five_a, score_xg_ten_a, 
+            score_xg_one_b, score_xg_five_b, score_xg_ten_b)
 
 
 def main (): 
@@ -165,8 +200,10 @@ def main ():
             scraper.refresh_selenium(back_tab=1)
 
             # Get home scores
-            score_home_one, score_home_five, score_home_ten = get_scores (scraper)
-
+            home_score_one, home_score_five, home_score_ten, \
+            home_score_xg_one_a, home_score_xg_five_a, home_score_xg_ten_a, \
+            home_score_xg_one_b, home_score_xg_five_b, home_score_xg_ten_b = get_scores (scraper)
+            
             # Go to away tab
             selector_away_tab = ".pre-match-statistics__history-L5M .team-btn:last-child"
             scraper.click (selector_away_tab)
@@ -174,11 +211,12 @@ def main ():
             scraper.refresh_selenium(back_tab=1)
 
             # Get away scores
-            score_away_one, score_away_five, score_away_ten = get_scores (scraper)
+            away_score_one, away_score_five, away_score_ten, \
+            away_score_xg_one_a, away_score_xg_five_a, away_score_xg_ten_a, \
+            away_score_xg_one_b, away_score_xg_five_b, away_score_xg_ten_b = get_scores (scraper)
 
             # Return to top of the page, for load tabs 
             scraper.go_top ()
-
 
             # Go to Standing page
             selector_standing = ".about-match-page__nav > .menu-btn.spreadsheet"
