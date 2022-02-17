@@ -38,6 +38,71 @@ def login (current_tab=0):
     scraper.click (selector_submit)
     scraper.refresh_selenium(back_tab=current_tab)
 
+def get_scores (scraper):
+    """ Get the sum of the scores (last one, last five and last ten) 
+        of the current team (away or home) in the previw page
+
+    Args:
+        scraper (Web_scraping): Web_scraping class instance
+
+    Returns:
+        tuple: the three vales of the scores: last one, last five and last ten
+    """
+
+
+    # Show all matches
+    selector_show_more = ".pre-match-statistics__stat-line > .match-up"
+    for _ in range (6):
+        scraper.click (selector_show_more)
+        time.sleep (0.5)
+
+    # Get last match points
+    score_one = None
+    score_five = None
+    score_ten = None
+    score_sum = 0
+    score_counter = 0
+    selector_rows = ".pre-match-statistics__history-L5M .comparison-table > .body > .row"
+    rows = scraper.get_elems (selector_rows)
+    for row_index in range (1, len(rows) + 1):
+        selector_current_row = f"{selector_rows}:nth-child({row_index})"
+
+        # Skip hidden rows
+        style_current_row = scraper.get_attrib (selector_current_row, "style")
+        if style_current_row:
+            continue
+
+        # Get score color
+        selector_score = f'{selector_current_row} > [data-col-type="score"]'
+        score_color = scraper.get_attrib (selector_score, "class")
+
+        # Convert score color to points
+        score_poits = 0
+        if "green" in score_color:
+            score_poits = 3
+        if "yellow" in score_color:
+            score_poits = 1
+        if "red" in score_color:
+            score_poits = 0
+        
+        # Sum socre with the last values and incress counter
+        score_sum += score_poits
+        score_counter += 1
+
+        # Save score sums
+        if score_counter == 1:
+            score_one = score_sum
+        if score_counter == 5:
+            score_five = score_sum
+        if score_counter == 10:
+            score_ten = score_sum
+    
+    if not score_ten:
+        score_ten = score_sum
+
+    return (score_one, score_five, score_ten)
+
+
 def main (): 
 
     login ()
@@ -67,6 +132,7 @@ def main ():
         
         # Matches loop
         page_data = []
+        previw_data = {}
         for link in tqdm(links_matches): 
 
             # Open match in second tab
@@ -90,6 +156,29 @@ def main ():
                 scraper.driver.refresh ()
                 time.sleep (3)
                 scraper.refresh_selenium (back_tab=1)
+
+            # EXTRACT DATA FROM PREVIEW TAB
+
+            # Go to the end of the page for load tables
+            scraper.go_bottom ()
+            time.sleep (5)
+            scraper.refresh_selenium(back_tab=1)
+
+            # Get home scores
+            score_home_one, score_home_five, score_home_ten = get_scores (scraper)
+
+            # Go to away tab
+            selector_away_tab = ".pre-match-statistics__history-L5M .team-btn:last-child"
+            scraper.click (selector_away_tab)
+            time.sleep (5)
+            scraper.refresh_selenium(back_tab=1)
+
+            # Get away scores
+            score_away_one, score_away_five, score_away_ten = get_scores (scraper)
+
+            # Return to top of the page, for load tabs 
+            scraper.go_top ()
+
 
             # Go to Standing page
             selector_standing = ".about-match-page__nav > .menu-btn.spreadsheet"
