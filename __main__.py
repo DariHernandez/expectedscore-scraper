@@ -52,9 +52,12 @@ def get_scores (scraper):
 
     # Show all matches
     selector_show_more = ".pre-match-statistics__stat-line > .match-up"
-    for _ in range (6):
+    tries = 0
+    for _ in range (5):
         scraper.click (selector_show_more)
         time.sleep (0.5)
+  
+    scraper.refresh_selenium (back_tab=1)
 
     # Score color variables
     score_one = None
@@ -130,8 +133,8 @@ def get_scores (scraper):
     
     if not score_ten:
         score_ten = score_sum
-        score_xg_ten_a = score_xg_sum_a
-        score_xg_ten_b = score_xg_sum_b
+        score_xg_ten_a = round(score_xg_sum_a)
+        score_xg_ten_b = round(score_xg_sum_b)
 
     return (score_one, score_five, score_ten, 
             score_xg_one_a, score_xg_five_a, score_xg_ten_a, 
@@ -196,8 +199,14 @@ def main ():
 
             # Go to the end of the page for load tables
             scraper.go_bottom ()
-            time.sleep (5)
+            time.sleep (8)
             scraper.refresh_selenium(back_tab=1)
+
+            selector_sample_data = "body > div.wrapper > div.lightPreloader.about-match-page.main > div.content-container.center-content > div:nth-child(2) > div > div.parent-prematch > div > div.pre-match-statistics__history-L5M > div.comparison-table > div.header > div > div.cell.name"
+            sample_text = scraper.get_text (selector_sample_data)
+
+            if not sample_text:
+                continue
 
             # Get home scores
             home_score_one, home_score_five, home_score_ten, \
@@ -214,6 +223,28 @@ def main ():
             away_score_one, away_score_five, away_score_ten, \
             away_score_xg_one_a, away_score_xg_five_a, away_score_xg_ten_a, \
             away_score_xg_one_b, away_score_xg_five_b, away_score_xg_ten_b = get_scores (scraper)
+
+            # Save previw data
+            previw_data[url] = {
+                "home_score_one": home_score_one,
+                "home_score_five": home_score_five,
+                "home_score_ten": home_score_ten,
+                "home_score_xg_one_a": home_score_xg_one_a, 
+                "home_score_xg_five_a": home_score_xg_five_a,
+                "home_score_xg_ten_a": home_score_xg_ten_a,
+                "home_score_xg_one_b": home_score_xg_one_b,
+                "home_score_xg_five_b": home_score_xg_five_b,
+                "home_score_xg_ten_b": home_score_xg_ten_b,
+                "away_score_one": away_score_one,
+                "away_score_five": away_score_five,
+                "away_score_ten": away_score_ten,
+                "away_score_xg_one_a": away_score_xg_one_a, 
+                "away_score_xg_five_a": away_score_xg_five_a,
+                "away_score_xg_ten_a": away_score_xg_ten_a,
+                "away_score_xg_one_b": away_score_xg_one_b,
+                "away_score_xg_five_b": away_score_xg_five_b,
+                "away_score_xg_ten_b": away_score_xg_ten_b,                
+            }
 
             # Return to top of the page, for load tabs 
             scraper.go_top ()
@@ -333,6 +364,7 @@ def main ():
             formated_row.append (match_data[-1])            
 
             # Format params
+            url = formated_row[44]
             params = {
                 "match": formated_row[0],
                 "match_date": datetime.datetime.now(),
@@ -379,12 +411,30 @@ def main ():
                 "xg90_xga90_plus_no_index_away": formated_row[41],
                 "xg90_xga90_div_no_index_away": formated_row[42],
                 "teams_num": formated_row[43],
-                "url": formated_row[44]
+                "url": url,
+                "home_score_one": previw_data[url]["home_score_one"],
+                "home_score_five": previw_data[url]["home_score_five"],
+                "home_score_ten": previw_data[url]["home_score_ten"],
+                "home_score_xg_one_a": previw_data[url]["home_score_xg_one_a"],
+                "home_score_xg_five_a": previw_data[url]["home_score_xg_five_a"],
+                "home_score_xg_ten_a": previw_data[url]["home_score_xg_ten_a"],
+                "home_score_xg_one_b": previw_data[url]["home_score_xg_one_b"],
+                "home_score_xg_five_b": previw_data[url]["home_score_xg_five_b"],
+                "home_score_xg_ten_b": previw_data[url]["home_score_xg_ten_b"],
+                "away_score_one": previw_data[url]["away_score_one"],
+                "away_score_five": previw_data[url]["away_score_five"],
+                "away_score_ten": previw_data[url]["away_score_ten"],
+                "away_score_xg_one_a": previw_data[url]["away_score_xg_one_a"],
+                "away_score_xg_five_a": previw_data[url]["away_score_xg_five_a"],
+                "away_score_xg_ten_a": previw_data[url]["away_score_xg_ten_a"],
+                "away_score_xg_one_b": previw_data[url]["away_score_xg_one_b"],
+                "away_score_xg_five_b": previw_data[url]["away_score_xg_five_b"],
+                "away_score_xg_ten_b": previw_data[url]["away_score_xg_ten_b"]
             }
 
             # Debug lines
-            import pprint
-            pprint.pprint (params)
+            # import pprint
+            # pprint.pprint (params)
 
             # Send data to API
             try_request (api_url, params, send_data)
