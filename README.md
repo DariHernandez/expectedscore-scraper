@@ -41,56 +41,56 @@ Project type: **client's project**
 
 # Details
 
-## Workflow\r
-\r
-1. Login in the page\r
-2. Get the last matches with pagination (12 at time)\r
-3. Get data from matches (statistics from home and away teams)\r
-4. Format data\r
-5. Save the information in Excel\r
-6. request to the user if want to continue with the next 12 matches, or stop the program. \r
-\r
-## Output data\r
-\r
-The web scraping information will be saved in the file **output.xlsx**, in the sheet **data**.\r
-Each time you run the program, the information will be overwritten.\r
-\r
+## Workflow
+
+1. Login in the page
+2. Get the last matches with pagination (12 at time)
+3. Get data from matches (statistics from home and away teams)
+4. Format data
+5. Save the information in Excel
+6. request to the user if want to continue with the next 12 matches, or stop the program. 
+
+## Output data
+
+The web scraping information will be saved in the file **output.xlsx**, in the sheet **data**.
+Each time you run the program, the information will be overwritten.
+
 **Note:** while running the program, DON'T OPEN the excel file.
 
 # Install
 
-## Install third party modules\r
-\r
-\r
-\\`\\`\\` bash\r
-$ pip install -r requirements.txt\r
-\\`\\`\\`\r
-\r
-## Programs\r
-\r
-For run the project, the following programs should be installed:\r
-\r
+## Install third party modules
+
+
+``` bash
+$ pip install -r requirements.txt
+```
+
+## Programs
+
+For run the project, the following programs should be installed:
+
 * [Google Chrome](https://www.google.com/intl/es/chrome) last version
 
 # Settings
 
-## config.json\r
-\r
-All settings are in the config.json file. Create it with the following strucure:\r
-\r
-\\`\\`\\`json\r
-{\r
-    \\\"user\\\": \\\"email@gmail.com\\\",\r
-    \\\"password\\\": \\\"mypass\\\"\r
-}\r
-\\`\\`\\`\r
-\r
-### user\r
-\r
-User to  login in the page [expectedscore.com](https://expectedscore.com/)\r
-\r
-### password\r
-\r
+## config.json
+
+All settings are in the config.json file. Create it with the following strucure:
+
+```json
+{
+    "user": "email@gmail.com",
+    "password": "mypass"
+}
+```
+
+### user
+
+User to  login in the page [expectedscore.com](https://expectedscore.com/)
+
+### password
+
 Password to login in the page [expectedscore.com](https://expectedscore.com/)
 
 # Run
